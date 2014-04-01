@@ -5,7 +5,7 @@ Created on Mar 31, 2014
 @author: alex
 '''
 
-from spearmint_salad.dataset import PickledDatasetLoader,  DatasetPartition, TrnTstSplitter
+from spearmint_salad.dataset import PickledDatasetLoader,  DatasetPartition, TrnTstSplitter, experiments_folder
 from spearmint_salad import salad,  base
 from os import path
 
@@ -19,7 +19,7 @@ def make_salad( hp_space, metric, dataset_path, salad_size = 25, max_iter = 100,
     
     
     trace_name = "trace_%s_on_%s_with_%d_voters.pkl"%(hp_space.name, ds_partition.name, salad_size)
-    trace_path = path.expandvars(path.join( "$EXPERIMENTS_FOLDER/tests", trace_name ))
+    trace_path = path.expandvars(path.join( experiments_folder, 'tests', trace_name ))
 
     salad.SpearmintSalad(
         evaluator=base.Evaluator(ds_partition),
@@ -30,5 +30,7 @@ def make_salad( hp_space, metric, dataset_path, salad_size = 25, max_iter = 100,
         trace_path = trace_path,
         Pool = None,
         )()
+        
+
         
         

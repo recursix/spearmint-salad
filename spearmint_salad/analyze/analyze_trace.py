@@ -17,7 +17,7 @@ import scipy.stats as sps
 from matplotlib.colors import NoNorm
 import numpy as np
 from graalUtil.num import uHist
-from spearmint.chooser.gp import GP
+from spearmint_salad.spearmint.chooser.gp import GP
 import scipy.linalg   as spla
 from plot_nd import Plot3d_with_params
 from os import path

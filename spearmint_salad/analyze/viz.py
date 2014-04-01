@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 Created on Nov 5, 2013
@@ -6,7 +7,7 @@ Created on Nov 5, 2013
 '''
 
 import os
-from mpl_plot import MPLFigureEditor
+from spearmint_salad.analyze.mpl_plot import MPLFigureEditor
 from matplotlib.figure import Figure
 
 from traits.api import HasTraits, Any, Directory, List, Enum, Str, Instance, PrototypedFrom, Range
@@ -17,11 +18,11 @@ from operator import itemgetter
 from fnmatch import fnmatch
 
 from spearmint_salad.analyze.analyze_trace import HpInfo, plot_eval_info, plot_time
-from spearmint_salad import pkl_trace
+from spearmint_salad import pkl_trace, experiments_folder
 
 from spearmint_salad.pkl_trace import get_column_dict
 from graalUtil.num import gaussConv
-from analyze_many_traces import plot_sign_test
+from spearmint_salad.analyze.analyze_many_traces import plot_sign_test
 
 
 # Define the demo class:    
@@ -29,7 +30,7 @@ class ExpList ( HasTraits ):
     """ Define the main DirectoryEditor demo class. """
 
     # Define a Directory trait to view:
-    exp_folder = Directory(os.path.expandvars('$EXPERIMENTS_FOLDER'))
+    exp_folder = Directory(experiments_folder)
     filter = Str('*')
     exp_list = List(Str)
     exp_path_list =List()
