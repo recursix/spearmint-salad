@@ -5,8 +5,8 @@ Created on Mar 31, 2014
 @author: alex
 '''
 
-from spearmint_salad.dataset import PickledDatasetLoader,  DatasetPartition, TrnTstSplitter, experiments_folder
-from spearmint_salad import salad,  base
+from spearmint_salad.dataset import PickledDatasetLoader,  DatasetPartition, TrnTstSplitter
+from spearmint_salad import salad,  base, experiments_folder
 from os import path
 
 def make_salad( hp_space, metric, dataset_path, salad_size = 25, max_iter = 100, partition=(0.6, 0.2, 0.2) ):
