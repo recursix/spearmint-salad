@@ -14,9 +14,7 @@ import traceback
 import getpass
 import fcntl
 import tempfile
-#import pymongo
-#import bson
-#from sys import stderr
+
 
 def get_sys_info():
     info = {
@@ -123,6 +121,9 @@ class DB:
     
     def __init__(self):
         self._d= {}
+    
+    def get_collection_list(self):
+        return self._d.keys()
     
     def __getattr__(self, key):
         return self.__getitem__(key)

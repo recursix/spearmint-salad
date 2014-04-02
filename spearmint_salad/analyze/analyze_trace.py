@@ -314,6 +314,43 @@ def clean_hp_name( hp_name ):
     
     return hp_name
 
+def extract_metric_set(*collection_list):
+    metric_set = set()
+    for collection in collection_list:
+        for doc in collection.find():
+            for metric_path in zip( * flatten_rec_dict(doc) )[0]:
+                metric = '.'.join(metric_path)
+                metric_set.add(metric)  
+    
+    return metric_set
+
+def flatten_rec_dict(rec_dict):
+    keyL = []
+    for key,val in rec_dict.iteritems():
+        if isinstance( val, dict ):
+            for (path, val_) in flatten_rec_dict(val):
+                keyL.append( ((key,) + path, val_) )
+        else:
+            keyL.append(  ( (key,), val )  )
+    return keyL
+
+def flatten_doc( doc ):
+    flat_doc = {}
+    for key_path, val in flatten_rec_dict(doc):
+        flat_doc[ '.'.join( key_path ) ] = val
+         
+    return flat_doc
+
+def get_collection_structure(collection):
+    info_dict = {}
+    for doc in collection.find():
+        flat_doc = flatten_doc( doc)
+        for key, val in flat_doc.iteritems():
+            count, type_set = info_dict.get( key, (0,set()) )
+            type_set.add( type(val) )
+            info_dict[key] = count+1, type_set
+    return info_dict
+
 def plot_eval_info( plot, hp_info, y_key, perm = None ):
     
     

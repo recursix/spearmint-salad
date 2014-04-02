@@ -17,7 +17,7 @@ from traits.has_traits import on_trait_change
 from operator import itemgetter
 from fnmatch import fnmatch
 
-from spearmint_salad.analyze.analyze_trace import HpInfo, plot_eval_info, plot_time
+from spearmint_salad.analyze.analyze_trace import HpInfo, plot_eval_info, plot_time, extract_metric_set
 from spearmint_salad import pkl_trace, experiments_folder
 
 from spearmint_salad.pkl_trace import get_column_dict
@@ -140,15 +140,7 @@ class PatternFilter:
             
     
 
-def extract_metric_set(*collection_list):
-    metric_set = set()
-    for collection in collection_list:
-        for doc in collection.find():
-            for metric_path in zip( * flatten_rec_dict(doc) )[0]:
-                metric = '.'.join(metric_path)
-                metric_set.add(metric)  
-    
-    return metric_set
+
 
 class TimeLine(TraceSelector):
     
@@ -230,15 +222,7 @@ class TimeLine(TraceSelector):
 
         return self.view
     
-def flatten_rec_dict(rec_dict):
-    keyL = []
-    for key,val in rec_dict.iteritems():
-        if isinstance( val, dict ):
-            for (path, val_) in flatten_rec_dict(val):
-                keyL.append( ((key,) + path, val_) )
-        else:
-            keyL.append(  ( (key,), val )  )
-    return keyL
+
 
 class BasicPlot(TraceSelector):
     

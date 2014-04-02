@@ -4,7 +4,7 @@ Created on Nov 24, 2013
 
 @author: alexandre
 '''
-
+from sklearn.datasets.base import Bunch
 from os import path
 from util import expandVarsRec, readFile, readPklz
 import os
@@ -161,7 +161,9 @@ class DatasetLoader(object):
         return NotImplementedError('get_dataset is not implemented')
 
     def get_shape(self):
-        return NotImplementedError('get_shape is not implemented')
+        dataset = self.get_dataset()
+        return DatasetShape( n_samples = dataset.n_samples, name = dataset.name)
+        
 
     def add_mask(self, mask):
         self.mask_list.addMask(mask)
@@ -214,7 +216,14 @@ class PickledDatasetLoader(DatasetLoader):
             self.get_name(), self.path, self.shape.n_samples, str(self.shape.x_space), str(self.shape.y_space),
             str(self.mask_list))
 
-
+class SklearnDatasetLoader(DatasetLoader):
+    
+    def __init__(self, ds_name):
+        self.ds_name = ds_name
+    
+    def get_dataset(self):
+        pass
+    
 
 class DatasetPartition(dict):
     """

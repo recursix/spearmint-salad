@@ -250,19 +250,21 @@ class SpearmintSalad:
 
     def _build_and_eval_salad(self, hp_id_N, bootstrap_matrix_km = None):
         prob_N = self._get_prob(hp_id_N,bootstrap_matrix_km)
-        lossD = self._eval_salad( hp_id_N, prob_N )
-        return lossD, prob_N
+        lossD, predictD = self._eval_salad( hp_id_N, prob_N )
+        return lossD, predictD, prob_N
     
     
     
     def _eval_salad(self, hp_id_N, prob_N):
         
         lossD = {}
+        predictD = {}
         for partition in ['val', 'tst']:
             y_predict = self.metric.model_averaging(self._get_y_list(hp_id_N, partition), prob_N)
             lossD[partition] = self._eval(y_predict, partition)
+            predictD[partition] = y_predict
             
-        return lossD
+        return lossD, predictD
     
     def _eval(self, y_predict, partition='tst'):
         return self.metric.loss(self.y_dict[partition], y_predict)
@@ -297,11 +299,12 @@ class SpearmintSalad:
         
         
         lossD = {}
+        predictD = {}
         for partition in ['val', 'tst']:
             y_predict = self.result_dict[chosen_hp_id][partition]['y']
             lossD[partition] = self._eval(y_predict, partition)
-        
-        return lossD
+            predictD[partition] = y_predict
+        return lossD, predictD
     
     
     def _analyze_greedy(self,hp_id_N, ensemble_size=10):
@@ -323,10 +326,9 @@ class SpearmintSalad:
             print 'analyzing results %d'%len(hp_id_N)
         
         self.trace_result(hp_id_N[-1])
-        argmin_lossD = self._eval_argmin(hp_id_N)
-        salad_lossD, prob_N = self._build_and_eval_salad(hp_id_N)
+        argmin_lossD, argmin_predictD = self._eval_argmin(hp_id_N)
+        salad_lossD, salad_predictD, prob_N  = self._build_and_eval_salad(hp_id_N)
         
- 
         for essr in [ 0.2, 0.5, 1.]: # try for different essr
             bootstrap_matrix_km = base.build_bootstrap_matrix(2*self.salad_size,len(self.y_val_m),essr)
             salad_lossD['%d%%'%(round(essr*100))] = self._build_and_eval_salad(hp_id_N,bootstrap_matrix_km)[0]
@@ -336,9 +338,14 @@ class SpearmintSalad:
 #         
         
         # sparsify for storage
-#         prob_list = [ ( int(hp_id), float(prob)) for hp_id, prob in zip( hp_id_N, prob_N ) if prob > 0]
-#         self.trace.write(2,'salad',{'i':len(hp_id_N)-1, 'prob':prob_list})
-#         
+        prob_list = [ ( int(hp_id), float(prob)) for hp_id, prob in zip( hp_id_N, prob_N ) if prob > 0]
+        self.trace.write(2,'predict',dict(
+            i = len(hp_id_N)-1,
+            salad_predict = salad_predictD,
+            argmin_predict = argmin_predictD,
+            prob = prob_list,
+            ))
+        
         
         self.trace.write(2,'loss',dict(
             i = len(hp_id_N)-1,

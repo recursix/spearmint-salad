@@ -9,7 +9,6 @@ else:
     experiments_folder = os.path.join( tempfile.gettempdir(), 'spearmint_salad_experiments' )
 
 
-print 'experimetns_folder: ', experiments_folder
 if not os.path.exists(experiments_folder):
     os.makedirs(experiments_folder)
     
