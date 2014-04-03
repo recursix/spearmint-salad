@@ -20,7 +20,7 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 
 ## Usage
 
-First, you have to define a hyperparameter search space. To do so, we provide an elegant pythonic tool that mimic the way you would normally instantiate your learning algorithm. Example using SVR from scikit learn:
+First, you have to define a hyperparameter search space. To do so, we provide an elegant pythonic tool that mimics the way you would normally instantiate your learning algorithm. Example using SVR from scikit learn:
 ```python
 from spearmint_salad import hp
 from sklearn.svm import SVR
