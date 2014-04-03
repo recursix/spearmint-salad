@@ -20,7 +20,7 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 
 ## Usage
 
-Elegant way to define the hyperparameter space. Example using SVR from scikit learn:
+First, you have to define a hyperparameter search space. To do so, we provide an elegant pythonic tool that mimic the way you would normally instantiate your learning algorithm. Example using SVR from scikit learn:
 ```python
 from spearmint_salad import hp
 from sklearn.svm import SVR
@@ -28,10 +28,10 @@ from sklearn.svm import SVR
 # Encapsulate the class into a hp.Obj to be able to instantiate using variable parameters 
 # or constant parameters if necessary.
 hp_space = hp.Obj(SVR)(
-    C = hp.Float( 0.01, 1000, hp.log_scale ), # variable
+    C = hp.Float( min_val=0.01, max_val=1000, hp.log_scale ), # variable
     kernel = 'rbf', # constant
-    gamma = hp.Float( 10**-5, 1000, hp.log_scale ), # variable
-    epsilon = hp.Float(0.01,1, hp.log_scale), # variable
+    gamma = hp.Float( min_val=10**-5, max_val=1000, hp.log_scale ), # variable
+    epsilon = hp.Float(min_val=0.01, max_val=1, hp.log_scale), # variable
 )
 ```
 Next, it suffices to start the optimization for a given metric on a particular dataset
