@@ -18,14 +18,35 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 * scikit-learn (Optional, for playing with the provided examples)
 
 ## Usage
-```
-from spearmint_salad import  hp
-from sklearn.svm import SVC
-hp_space = hp.Obj(SVC)(
-    C = hp.Float( 0.01, 1000, hp.log_scale ),
-    gamma = hp.Float( 10**-5, 1000, hp.log_scale ),
+
+Elegant way to define the hyperparameter space. Example using SVM from scikit learn:
+```python
+from spearmint_salad import hp
+from sklearn.svm import SVR
+
+# Encapsulate the class into a hp.Obj to be able to instantiate using variable parameters 
+# or constant parameters if necessary.
+hp_space = hp.Obj(SVR)(
+    C = hp.Float( 0.01, 1000, hp.log_scale ), # variable
+    kernel = 'rbf', # constant
+    gamma = hp.Float( 10**-5, 1000, hp.log_scale ), # variable
+    epsilon = hp.Float(0.01,1, hp.log_scale), # variable
 )
 ```
+Next, it suffices to start the optimization for a given metric on a particular dataset
+
+```python
+from spearmint_salad import metric
+
+metric = metric.SquareDiffLoss()
+make_salad( hp_space, metric, dataset_path)
+```
+During the optimization, you can launch the visualization tool
+```bash
+$ viz.py
+```
+
+
 
 ## References
 [1] Lacoste, Alexandre, Hugo Larochelle, François Laviolette, and Mario Marchand. "Sequential Model-Based Ensemble Optimization." arXiv preprint arXiv:1402.0796 (2014).
