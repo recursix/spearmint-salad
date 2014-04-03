@@ -20,7 +20,7 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 
 ## Usage
 
-Elegant way to define the hyperparameter space. Example using SVM from scikit learn:
+Elegant way to define the hyperparameter space. Example using SVR from scikit learn:
 ```python
 from spearmint_salad import hp
 from sklearn.svm import SVR
