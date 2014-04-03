@@ -34,6 +34,7 @@ def make_salad( hp_space, metric, dataset_path, salad_size = 25, max_iter = 100,
         trace_path = trace_path,
         Pool = None,
         )()
+        
     return TraceDBFile(trace_path)
 
 def get_final_risk(trace):
