@@ -4,10 +4,10 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 ## Features
 * **Fast hyperparameter optimization** via [Spearmint](https://github.com/JasperSnoek/spearmint), based on a gaussian process modelization of the hyperparameter search space.
 * **Ensemble of learning algorithms** with no extra computational cost at learning time. 
-* **Compatible with any programming language** via a configurable command line interface (comint soon).
+* **Compatible with any programming language** via a configurable command line interface (*coming soon*).
 * **3D vizualization** of the hyperparameter space based on [mayavi](http://code.enthought.com/projects/mayavi/) (Optional dependency).
-* **Easy parallelization** via python's multiprocessing or an implementation of an mpi queue for running on a computer grid (alpha).
-* **Crash recovery** (coming soon). 
+* **Easy parallelization** via python's multiprocessing or an implementation of an mpi queue for running on a computer grid (*alpha*).
+* **Crash recovery** (*coming soon*). 
 * **Anytime algorithm.** You can obtain the best predictor so far and visualize the behavior at anytime.
 * **MongoDB compatible**. All information gathered during the optimization process is stored in a MongoDB-like structure. 
 
@@ -50,9 +50,9 @@ $ viz.py
 ![](https://raw.github.com/wiki/recursix/spearmint-salad/viz.png)
 
 ## References
-[1] Lacoste, Alexandre, Hugo Larochelle, François Laviolette, and Mario Marchand. "Sequential Model-Based Ensemble Optimization." arXiv preprint arXiv:1402.0796 (2014).
+[1] Lacoste, Alexandre, Hugo Larochelle, François Laviolette, and Mario Marchand. "Sequential Model-Based Ensemble Optimization." *arXiv* preprint arXiv:1402.0796 (2014).
 
-[2] Snoek, Jasper, Hugo Larochelle, and Ryan P. Adams. "Practical Bayesian Optimization of Machine Learning Algorithms." In NIPS, pp. 2960-2968. 2012.
+[2] Snoek, Jasper, Hugo Larochelle, and Ryan P. Adams. "Practical Bayesian Optimization of Machine Learning Algorithms." In *NIPS*, pp. 2960-2968. 2012.
 
-[3] Lacoste, Alexandre, Mario Marchand, François Laviolette, and Hugo Larochelle. "Agnostic Bayesian Learning of Ensembles." In Proceedings of The 31st International Conference on Machine Learning, pp. 611-619. 2014.
+[3] Lacoste, Alexandre, Mario Marchand, François Laviolette, and Hugo Larochelle. "Agnostic Bayesian Learning of Ensembles." In *Proceedings of The 31st International Conference on Machine Learning*, pp. 611-619. 2014.
 
