@@ -3,7 +3,7 @@ This python software is an implementation of the Sequential Model-Based Ensemble
 
 ## Features
 * **Fast hyperparameter optimization** via [Spearmint](https://github.com/JasperSnoek/spearmint), based on a gaussian process modelization of the hyperparameter search space.
-* **Ensemble of learning algorithms** with no extra computational cost at learning time. 
+* **State of the art ensemble of learning algorithms** with no extra computational cost at learning time. 
 * **Compatible with any programming language** via a configurable command line interface (*coming soon*).
 * **3D vizualization** of the hyperparameter space based on [mayavi](http://code.enthought.com/projects/mayavi/) (Optional dependency).
 * **Easy parallelization** via python's multiprocessing or an implementation of an mpi queue for running on a computer grid (*alpha*).
