@@ -46,7 +46,7 @@ During the optimization, you can launch the visualization tool
 $ viz.py
 ```
 
-
+![](https://raw.github.com/recursix/spearmint-salad/wiki/viz.png)
 
 ## References
 [1] Lacoste, Alexandre, Hugo Larochelle, François Laviolette, and Mario Marchand. "Sequential Model-Based Ensemble Optimization." arXiv preprint arXiv:1402.0796 (2014).
