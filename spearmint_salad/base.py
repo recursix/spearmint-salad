@@ -11,7 +11,8 @@ from traceback import format_exc
 from sobol_lib import i4_sobol_generate
 import time
 from hp import HpConfiguration
-import os
+from spearmint_salad.dataset import n_samples
+# from graalUtil.num import uHist
 
 def argmin_with_ties( eLoss_kN ):
     min_eLoss_k1 = np.min(eLoss_kN, 1).reshape(-1, 1) # the min value for the k different bootstrap
@@ -101,7 +102,7 @@ class Evaluator:
         y_dict = {}
         for name, ds_loader in self.ds_partition.items():
             if name == 'trn': continue
-            y_dict[name] = ds_loader.get_dataset().y
+            y_dict[name] = ds_loader.get_dataset().target
         return y_dict
     
     @property
@@ -117,11 +118,13 @@ def eval_learner(learner, ds_partition):
 
         if hasattr(learner, 'set_valid_info'):
             val_ds = ds_partition['val'].get_dataset()
-            learner.set_valid_info(val_ds.x, val_ds.y )
+            learner.set_valid_info(val_ds.data, val_ds.target )
         if hasattr(learner, 'learn' ): 
             estimator = learner.learn(trn_ds )
         elif hasattr(learner, 'fit' ):
-            estimator = learner.fit( trn_ds.x, trn_ds.y )
+#             print uHist(trn_ds.data,"trn_ds.data")
+#             print uHist(trn_ds.target,"trn_ds.target")  
+            estimator = learner.fit( trn_ds.data, trn_ds.target )
         else:
             raise Exception("Learner doesn't have any of the required member function learn, train, fit.")        
         
@@ -137,19 +140,12 @@ def eval_learner(learner, ds_partition):
             if partition_name == 'trn' : continue
             
             ds = dsLoader.get_dataset()
-            predict_info = {'m':len(ds.y)}
+            predict_info = {'n_samples':n_samples(ds.data)}
 
             try:
-                if hasattr(ds, 'x' ):
-                    x = ds.x
-                elif hasattr(ds,'X'):
-                    x = ds.X
-                else:
-                    raise Exception("dataset doesn't have attribute x or X")
-                
-                y = estimator.predict( x )
-                predict_info['y'] = y
-                
+
+                predict_info['y'] = estimator.predict( ds.data )
+#                 print uHist( predict_info['y'], '%s.y_predict'%partition_name )
                 predict_info['predict_status'] = 0
             except:
                 predict_info['predict_status'] = 1
