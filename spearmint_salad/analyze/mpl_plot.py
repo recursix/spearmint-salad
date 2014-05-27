@@ -11,7 +11,7 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 
 from traits.api import Instance, HasTraits, Range,List, Bool, on_trait_change, Button
 from traitsui.api import CheckListEditor,Group, View, Item
-from graalUtil.num import gaussConv
+from spearmint_salad.util import gaussConv
 from traitsui.wx.editor import Editor
 from traitsui.wx.basic_editor_factory import BasicEditorFactory
 

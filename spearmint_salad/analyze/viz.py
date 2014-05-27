@@ -21,7 +21,7 @@ from spearmint_salad.analyze.analyze_trace import HpInfo, plot_eval_info, plot_t
 from spearmint_salad import pkl_trace, experiments_folder
 
 from spearmint_salad.pkl_trace import get_column_dict
-from graalUtil.num import gaussConv
+from spearmint_salad.util import gaussConv
 from spearmint_salad.analyze.analyze_many_traces import plot_sign_test
 
 
@@ -230,7 +230,9 @@ class BasicPlot(TraceSelector):
 
     view = View(
         Item('trace_path', style='simple', width=-20),
-        Item('figure', editor=MPLFigureEditor(), show_label=False), 
+        Group(
+            Item('figure', editor=MPLFigureEditor(), show_label=False),
+            ), 
         resizable=True)
     
     def new_trace(self, trace):
@@ -280,7 +282,7 @@ class SgnTest(HasTraits):
 
 class PlotRisk(TimeLine):
     default_selected = PatternFilter('salad_risk.tst', 'argmin_risk.tst')
-    metric_pattern = PatternFilter('salad_risk.tst', 'salad_risk.val', '*greedy*', 'argmin*', '*50%.tst' )  
+    metric_pattern = PatternFilter('salad_risk.tst', 'salad_risk.val', '*greedy*', 'argmin*', '*50%.tst', '*kde*' )  
 
 class PlotEssr(TimeLine):
     default_selected = PatternFilter('salad*.tst')
@@ -290,6 +292,7 @@ class PlotTime(BasicPlot):
     def _plot(self,trace):
         plot_time( trace, self.figure.add_subplot(111) )
 
+
 from spearmint_salad.analyze.plot_nd import Plot3d_with_params
 class PlotHP(TraceSelector):
     
@@ -298,14 +301,14 @@ class PlotHP(TraceSelector):
     
     view = View(
         Item('trace_path', style='simple', width=-20),
-        Item('plot', style='custom', show_label=False), 
+        Group( Item('plot', style='custom', show_label=False)), 
         resizable=True )
     
     def new_trace(self, trace):
         print 'creating 3d plot'
         hp_info = HpInfo(trace)
         
-        plot_eval_info(self.plot, hp_info, 'val.risk')
+        plot_eval_info(self.plot, hp_info, ['val.risk','tst.risk'])
 
 class Main(HasTraits):
     tabs = List(HasTraits)
@@ -320,8 +323,8 @@ class Main(HasTraits):
         Item('tabs', style='custom', show_label=False, 
             editor=ListEditor(use_notebook=True, deletable=False, dock_style='tab',selected='selected')),
         resizable = True,
-        height = 500,
-        width= 500 )
+        height = 700,
+        width= 1100 )
 
 exp_list = ExpList()
 

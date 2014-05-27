@@ -10,6 +10,7 @@ from os import path
 import cPickle
 import fcntl
 import zlib
+from scipy import signal
 
 
 def expandVarsRec( vPath ):
@@ -93,3 +94,8 @@ def readPkl( *args, **kwArgs ):
         if kwArgs.has_key('defaultVal'): return kwArgs['defaultVal']
         else: raise
  
+ 
+def gaussConv(std=3., *xL):
+    f = signal.gaussian(int(4*std), std)
+    f /= f.sum()
+    return [ signal.convolve(x, f, 'valid') for x in xL ]

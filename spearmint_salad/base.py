@@ -12,7 +12,7 @@ from sobol_lib import i4_sobol_generate
 import time
 from hp import HpConfiguration
 from spearmint_salad.dataset import n_samples
-# from graalUtil.num import uHist
+import os
 
 def argmin_with_ties( eLoss_kN ):
     min_eLoss_k1 = np.min(eLoss_kN, 1).reshape(-1, 1) # the min value for the k different bootstrap
@@ -122,8 +122,6 @@ def eval_learner(learner, ds_partition):
         if hasattr(learner, 'learn' ): 
             estimator = learner.learn(trn_ds )
         elif hasattr(learner, 'fit' ):
-#             print uHist(trn_ds.data,"trn_ds.data")
-#             print uHist(trn_ds.target,"trn_ds.target")  
             estimator = learner.fit( trn_ds.data, trn_ds.target )
         else:
             raise Exception("Learner doesn't have any of the required member function learn, train, fit.")        
@@ -145,7 +143,6 @@ def eval_learner(learner, ds_partition):
             try:
 
                 predict_info['y'] = estimator.predict( ds.data )
-#                 print uHist( predict_info['y'], '%s.y_predict'%partition_name )
                 predict_info['predict_status'] = 0
             except:
                 predict_info['predict_status'] = 1
@@ -164,35 +161,35 @@ def get_tmp_dir():
     return tempfile.mkdtemp('spearmint_salad')
 
 
-class VariableMap:
-    
-    def __init__(self, name, min_val, max_val, transform=None, is_int=False):
-        """
-        Range is within [min_val, max_val).        
-        """
-        
-        self.name = name
-        self.min_val = min_val
-        self.max_val = max_val
-        self.is_int = is_int
-        self.transform = transform # may be useful for working in logspace
-        
-    def map(self, unit_value):
-       
-        if unit_value >= 1: # makes sure it stays within [0,1)
-            unit_value = 1. - np.finfo(1.).eps
-        
-        span = self.max_val - self.min_val
-                    
-        val = self.min_val + unit_value*span
-
-        if self.transform is not None:
-            val = self.transform(val) 
-
-        if self.is_int:
-            val =  int(np.floor(val))
-            
-        return val
+# class VariableMap:
+#     
+#     def __init__(self, name, min_val, max_val, transform=None, is_int=False):
+#         """
+#         Range is within [min_val, max_val).        
+#         """
+#         
+#         self.name = name
+#         self.min_val = min_val
+#         self.max_val = max_val
+#         self.is_int = is_int
+#         self.transform = transform # may be useful for working in logspace
+#         
+#     def map(self, unit_value):
+#        
+#         if unit_value >= 1: # makes sure it stays within [0,1)
+#             unit_value = 1. - np.finfo(1.).eps
+#         
+#         span = self.max_val - self.min_val
+#                     
+#         val = self.min_val + unit_value*span
+# 
+#         if self.transform is not None:
+#             val = self.transform(val) 
+# 
+#         if self.is_int:
+#             val =  int(np.floor(val))
+#             
+#         return val
 
 def build_bootstrap_matrix(k_bootstrap, m, essr, rng=None):
     bootstrap_matrix_km = np.zeros((k_bootstrap, m))
@@ -319,14 +316,14 @@ class Optimizer:
         if self.chooser is None:
             self._init()
         
-#         
-#         if self.chooser.mcmc_iters > 0:
-#             print 'resetting state'
-#             self.chooser.D = -1  # triggers a reinit
-#             if os.path.exists(self.chooser.state_pkl):
-#                 print 'removing choosser.pkl'
-#                 os.remove(self.chooser.state_pkl)
-#             self.chooser.needs_burnin = True
+        # since we "trick" SMBO, we need to reinit the chooser and restart the burnin
+        if self.chooser.mcmc_iters > 0:
+            print 'resetting state'
+            self.chooser.D = -1  # triggers a reinit
+            if os.path.exists(self.chooser.state_pkl):
+                print 'removing choosser.pkl'
+                os.remove(self.chooser.state_pkl)
+            self.chooser.needs_burnin = True
         
         
         hp_id = self.chooser.next( *self._build_grid_info(result_list, pending ))
@@ -337,6 +334,11 @@ class Optimizer:
         return HpConfiguration( self.hp_space, self.grid.get_point(hp_id) ), hp_id
     
 
+    def get_chooser_state(self):
+        state = {}
+        for key in ['ls', 'amp2','noise','mean']:
+            state[key] = getattr(self.chooser, key, None )
+        return state
     
     def _build_grid_info(self, result_list, pending ):
         

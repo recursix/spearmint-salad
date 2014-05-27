@@ -9,13 +9,19 @@ import numpy as np
 
 
 
-def square_diff_loss( yTarget_md, y_md):
-    yTarget_md, y_md = _check_y_shape( yTarget_md, y_md )
-    return ((y_md - yTarget_md)**2).sum(1)
+def square_diff_loss( target_md, predict_md):
+    target_md, predict_md = _check_y_shape( target_md, predict_md )
+    return ((target_md - predict_md)**2).sum(1)
     
-def abs_diff_loss( yTarget_md, y_md):
-    yTarget_md, y_md = _check_y_shape( yTarget_md, y_md )
-    return np.abs(y_md - yTarget_md).sum(1)
+def abs_diff_loss(target_md, predict_md):
+    target_md, predict_md = _check_y_shape( target_md, predict_md )
+    return np.abs(target_md- predict_md).sum(1)
+
+def abs_impalance_loss( target_md, predict_md):
+    target_md, predict_md = _check_y_shape( target_md, predict_md )
+    loss = target_md - predict_md
+    loss[loss < 0 ] *= -10
+    return loss.sum(1)
 
 def zero_one_loss( yTarget_md, y_md):
     yTarget_md, y_md = _check_y_shape( yTarget_md, y_md )
@@ -140,6 +146,8 @@ def weighted_average( y_dm, w_d ):
     assert w_d1.shape[0] == y_dm.shape[0]
     return np.sum( y_dm * w_d1, 0 )
 
+
+
 def extract_prob( prob_mc, idx_m ):
     idx_m = idx_m.astype(np.int) 
     range_m = np.arange(len(idx_m)) 
@@ -177,7 +185,13 @@ class AbsDiffLoss(Metric):
     loss = staticmethod( abs_diff_loss )
     optim_loss = staticmethod( abs_diff_loss )
     model_averaging = staticmethod( weighted_average ) # not the median ! 
-    
+
+class AbsImbalanceLoss(Metric):
+    short_name = 'absi'
+    loss = staticmethod( abs_impalance_loss )
+    optim_loss = staticmethod( abs_impalance_loss )
+    model_averaging = staticmethod( weighted_average ) # not the median ! 
+
 class ZeroOneNLL(Metric):
     short_name = '01-nll'
     loss = staticmethod( zero_one_loss_prob )

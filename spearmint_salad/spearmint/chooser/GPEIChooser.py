@@ -30,7 +30,7 @@ import scipy.linalg   as spla
 import scipy.stats    as sps
 import scipy.optimize as spo
 import cPickle
-
+from warnings import warn
 from Locker  import *
 from helpers import *
 
@@ -159,12 +159,20 @@ class GPEIChooser:
             try:
                 self.optimize_hypers(comp, vals)
             except:
+                warn('optimze hyper failed')
                 # Initial length scales.
                 self.ls = np.ones(self.D)
                 # Initial amplitude.
                 self.amp2 = np.std(vals)
                 # Initial observation noise.
                 self.noise = 1e-3
+                
+            
+#             log('warning*** resetting hypers')
+#             self.ls = np.ones(self.D)*0.1
+#             self.amp2 = np.std(vals)
+#             self.noise = 1e-8    
+            
             log("mean: %f  amp: %f  noise: %f  min_ls: %f  max_ls: %f"
                              % (self.mean, np.sqrt(self.amp2), self.noise, np.min(self.ls),
                                 np.max(self.ls)))
@@ -204,6 +212,9 @@ class GPEIChooser:
             ncdf   = sps.norm.cdf(u)
             npdf   = sps.norm.pdf(u)
             ei     = func_s*( u*ncdf + npdf)
+
+            #self._cached  = dict( ei=ei, func_s=func_s, func_m=func_m, cand=cand )
+
 
             return ei
         else:
@@ -288,12 +299,6 @@ class GPEIChooser:
 
     def _sample_noisy(self, comp, vals):
         
-#         from graalUtil.num import uHist
-#         print uHist( comp, 'comp' )
-#         print uHist( vals, 'vals' )
-#         for key in ['mean','amp2','noise', 'noise_scale', 'amp2_scale']:
-#             print '%s:%.3g'%( key, getattr(self,key))
-#         print 'ls:',self.ls
         
         def logprob(hypers):
             mean  = hypers[0]

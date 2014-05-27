@@ -62,7 +62,7 @@ def sign_test_over_time(trace_list, key_A='salad_risk.tst', key_B='argmin_risk.t
 
     return wins, wins+lose
 
-from graalUtil.num import uHist
+
 
 
 def plot_sign_test_(trace_list, key_pair_list = None, axes=None):

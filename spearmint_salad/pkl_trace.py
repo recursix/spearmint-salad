@@ -86,6 +86,10 @@ class Collection:
         self._l = []
         self._id = 0
     
+    @property
+    def docs(self):
+        return self._l
+    
     def insert(self, doc):
         
         try:
@@ -152,6 +156,8 @@ def get_column_list( collection, *col_names):
 class TraceDB(object):
     pass
 
+from traceback import print_exc
+
 class TraceDBFile(TraceDB):
     
     def __init__(self, trace_path=None):
@@ -195,6 +201,9 @@ class TraceDBFile(TraceDB):
                                 
                 except EOFError:
                     break
+#                 except AttributeError:
+#                     print_exc()
+                    
             self.seek = fh.tell()
 
 #        print 'next seek:', self.seek

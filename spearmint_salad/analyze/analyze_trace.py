@@ -5,33 +5,45 @@ Created on Oct 17, 2013
 @author: alexandre
 '''
 
-import matplotlib
+# import matplotlib
 # We want matplotlib to use a wxPython backend
-matplotlib.use('WXAgg', warn=False)
+# matplotlib.use('WXAgg', warn=False)
 
 from spearmint_salad import pkl_trace
 from spearmint_salad.pkl_trace import get_column_dict, get_column_list, plot_stats
 from spearmint_salad.hp import HpConfiguration
 import matplotlib.pyplot as pp
 import scipy.stats as sps
-from matplotlib.colors import NoNorm
+# from matplotlib.colors import NoNorm
 import numpy as np
-from graalUtil.num import uHist
+
 from spearmint_salad.spearmint.chooser.gp import GP
 import scipy.linalg   as spla
-from plot_nd import Plot3d_with_params
+# from plot_nd import Plot3d_with_params
 from os import path
 
+from spearmint_salad.util import gaussConv
 
 cmap = 'YlOrRd'
 
-
+def normalize(x):
+    mean= np.mean(x)
+    std = np.std(x)
+    if std == 0: std = 1
+    return (x - mean)/std, mean, std
+        
 class MyGP:
     
     def __init__(self, *argL, **argD ):
 
         self.gp = GP(*argL, **argD)
     
+    
+    def set_hypers(self, state):
+        print 'setting chooser state'
+        self.gp.__dict__.update(state)
+        print self
+        self.hypers_initialized = True
     
     def __str__(self):
         
@@ -42,6 +54,9 @@ class MyGP:
         return '\n'.join([ "%s : %s"%(key, str(val)) for key, val in infoD.items() ]) 
     
     def fit(self, x, y):
+#         y, self.mean, self.std = normalize(y)
+        
+        
         
         m,d = x.shape
         assert y.shape == (m,), "m = %d, y.shape = %s"%(m, str(y.shape))
@@ -51,7 +66,8 @@ class MyGP:
         
         self.gp.real_init(d,y)
         
-        self.gp.optimize_hypers(x,y)
+        if not self.hypers_initialized:
+            self.gp.optimize_hypers(x,y)
 
         # The primary covariances for prediction.
         K   = self.gp.cov(x)
@@ -202,10 +218,7 @@ def plot_time(trace, axes=None):
     duration = remap( hp_id_map, hp_id_duration, duration )
 
     
-#    print uHist(choose_time, 'choose_time' )
-#    print uHist(analyse_time, 'analyse_time' )
-#    print uHist(duration, 'duration' )
-    
+
     i = np.arange( max_len )
     
     axes.bar(i,analyse_time, color='r', label = 'analyse time' )
@@ -217,7 +230,7 @@ def plot_time(trace, axes=None):
     axes.set_title('time per iteration for different components')
     
 
-from graalUtil.num import gaussConv
+
 def plot_curve(collection, x_key, *y_key_list):
     
     col_dict = get_column_dict( collection, * ((x_key, ) + y_key_list)  )
@@ -252,8 +265,10 @@ class HpInfo:
     def __init__(self, trace):
         self.hp_space = get_column_list(trace.db.main, 'hp_space' )[0][0]
         self.trace = trace
-        self.hp_id_list, unit_list = get_column_list( trace.db.candidates, 'hp_id', 'unit_value')
+        self.hp_id_list, unit_list, chooser_state_list, i = get_column_list( trace.db.candidates, 'hp_id', 'unit_value', 'chooser_state', 'i')
 
+
+        self.chooser_state = chooser_state_list[np.argmax(i)]
         self.hp_id_map = make_map(self.hp_id_list)
     
         self.unit_grid = np.array(unit_list)
@@ -268,10 +283,7 @@ class HpInfo:
         self.hp_keys = hp_keys
         self.hp_key_map = make_map(hp_keys)
         
-        for hp_key, col in zip(hp_keys, self.col_list):
-            try:
-                print uHist(col, hp_key)
-            except: pass 
+
         
     def map_hp_id_list(self, hp_id_list):
         return np.array([self.hp_id_map[hp_id] for hp_id in hp_id_list])
@@ -285,23 +297,23 @@ class HpInfo:
 class TimeLine:
     pass
 
-class Plot2d:
-    
-    def __init__(self, compute_std=False ):
-        self.compute_std = compute_std
-
-    def set_stats(self, y_val ):
-        self.monotonic_func = Uniformize(y_val)
-
-
-    def plot(self, x1,x2, y, w, y_mean, y_std):
-        
-        pp.scatter(x1, x2, c=self.monotonic_func(y), 
-            cmap=cmap, s=40*w, linewidths=0.5, norm=NoNorm(), edgecolor='black')
-    
-        y_sample = np.random.randn( *y_mean.shape) * y_std + y_mean 
-        pp.imshow( self.monotonic_func(y_sample) ,origin='lower', 
-            extent=(0,1,0,1), aspect='auto',  cmap=cmap, norm=NoNorm())
+# class Plot2d:
+#     
+#     def __init__(self, compute_std=False ):
+#         self.compute_std = compute_std
+# 
+#     def set_stats(self, y_val ):
+#         self.monotonic_func = Uniformize(y_val)
+# 
+# 
+#     def plot(self, x1,x2, y, w, y_mean, y_std):
+#         
+#         pp.scatter(x1, x2, c=self.monotonic_func(y), 
+#             cmap=cmap, s=40*w, linewidths=0.5, norm=NoNorm(), edgecolor='black')
+#     
+#         y_sample = np.random.randn( *y_mean.shape) * y_std + y_mean 
+#         pp.imshow( self.monotonic_func(y_sample) ,origin='lower', 
+#             extent=(0,1,0,1), aspect='auto',  cmap=cmap, norm=NoNorm())
 
 
 def clean_hp_name( hp_name ):
@@ -351,22 +363,45 @@ def get_collection_structure(collection):
             info_dict[key] = count+1, type_set
     return info_dict
 
-def plot_eval_info( plot, hp_info, y_key, perm = None ):
+def unpack_prob( distr, hp_info, n ):
+    hp_id_list, p_list = zip(*distr)
+    
+    idx = hp_info.map_hp_id_list( hp_id_list )
+    
+    prob = np.zeros( n )
+    prob[idx ] =  p_list
+    
+    np.testing.assert_almost_equal( prob.sum(), 1 )
+    
+    return prob
     
     
-    col_dict = get_column_dict( hp_info.trace.db.eval_info, 'hp_id', y_key )
+
+def plot_eval_info( plot, hp_info, y_keys, perm = None ):
     
-    idx = hp_info.map_hp_id_list(col_dict['hp_id'])
+    
+    y_dict = get_column_dict( hp_info.trace.db.eval_info, 'hp_id', *y_keys )
+    
+    idx = hp_info.map_hp_id_list(y_dict.pop('hp_id'))
+    
+    # add the agnostic bayes distribution the the list of traces
+    idx_list, distr_list = get_column_list( hp_info.trace.db.predict, 'i', 'prob' )
+    distr = distr_list[ np.argmax(idx_list) ] # extract the last computed distribution
+    y_dict['AB probability'] = unpack_prob( distr, hp_info, len(idx))
+    
+    
     
     if len(idx) == 0:
         print 'no results yet'
         return
     
     gp = MyGP(mcmc_iters=0, noiseless=False)
+    gp.set_hypers(hp_info.chooser_state)
     
-    y = np.array(col_dict[y_key])
+    for key in y_keys:
+        y_dict[key] = np.array(y_dict[key])
     
-    print '%s.shape:'%y_key, y.shape
+#     print '%s.shape:'%y_key, y.shape
     
     X = hp_info.unit_grid[idx,:]
     
@@ -378,7 +413,7 @@ def plot_eval_info( plot, hp_info, y_key, perm = None ):
     
     hp_keys = [ clean_hp_name(hp_key) for hp_key in hp_keys ]
     print hp_keys
-    plot.set_info(X, y, hp_keys, y_key, hp_info.hp_space.var_list, gp)
+    plot.set_info(X, y_dict, 'val.risk',hp_keys,  hp_info.hp_space.var_list, gp)
 
 
 if __name__ == "__main__":

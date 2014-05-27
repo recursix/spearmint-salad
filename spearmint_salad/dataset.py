@@ -8,6 +8,19 @@ Created on Nov 24, 2013
 import numpy as np
 from scipy import sparse
 
+# for unpickling  deprecated classes
+class PickledDatasetLoader(object): pass 
+class Dataset(object): pass
+
+
+class Bunch(dict): # this should just be part of the standard library
+    """
+    Makes dictionnary behave like objects i.e., d['x'] is equivalent to d.x
+    This should just be part of standard python library ...
+    """
+    def __init__(self, **kwargs):
+        dict.__init__(self, kwargs)
+        self.__dict__ = self
 
 def subList(x, idx):
     """
@@ -134,48 +147,48 @@ class DatasetPartition(dict):
         """
         return DatasetPartition(self.name,**self)
 
-#     
-# class XvSplitter:
-#     
-#     def __init__(self,  k_fold=5):
-#         self.k_fold = k_fold
-#     
-#     def __call__(self, ds_partition):
-#         return k_fold_split(ds_partition, self.k_fold)
-# 
-# 
-# def k_fold_split(ds_partition, k_fold=5, src='trn', dst='val' ):
-#     
-#     for i in range(k_fold):
-#         fold_partition = ds_partition.clone()
-#         
-#         for key, ds_loader in ds_partition.items():
-#             if key == src:
-#                 fold_partition[src] = ds_loader.clone(kFoldMaskTrn(i,k_fold))
-#                 fold_partition[dst] = ds_loader.clone(kFoldMaskVal(i,k_fold))
-# 
-#         yield fold_partition
+     
+class XvSplitter:
+     
+    def __init__(self,  k_fold=5):
+        self.k_fold = k_fold
+     
+    def __call__(self, ds_partition):
+        return k_fold_split(ds_partition, self.k_fold)
+ 
+ 
+def k_fold_split(ds_partition, k_fold=5, src='trn' ):
+     
+    for i in range(k_fold):
+        fold_partition = ds_partition.clone()
+        
+        ds_loader = ds_partition[src]
+                
+        fold_partition["%s_cv_%d"%(src,i)] = ds_loader.clone(kFoldMaskTrn(i,k_fold))
+        fold_partition['val_cv_%d'%i] = ds_loader.clone(kFoldMaskVal(i,k_fold))
 
-# 
-#     
-# class kFoldMaskVal:
-#     def __init__(self, i, k):
-#         self.i = i
-#         self.k = k
-# 
-#     def __call__(self, x):
-#         return Slice(x)[self.i::self.k]
-# 
-# 
-# 
-# class kFoldMaskTrn:
-#     def __init__(self, i, k):
-#         self.i = i
-#         self.k = k
-# 
-#     def __call__(self, x):
-#         idx = range(len(x))
-#         del idx[self.i::self.k]
-#         return subList(x, idx)
+        yield fold_partition
+
+ 
+     
+class kFoldMaskVal:
+    def __init__(self, i, k):
+        self.i = i
+        self.k = k
+ 
+    def __call__(self, x):
+        return Slice(x)[self.i::self.k]
+ 
+ 
+ 
+class kFoldMaskTrn:
+    def __init__(self, i, k):
+        self.i = i
+        self.k = k
+ 
+    def __call__(self, x):
+        idx = range(len(x))
+        del idx[self.i::self.k]
+        return subList(x, idx)
 
                 

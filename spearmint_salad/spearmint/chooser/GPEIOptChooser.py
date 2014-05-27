@@ -546,6 +546,9 @@ class GPEIOptChooser:
             npdf   = sps.norm.pdf(u)
             ei     = func_s*( u*ncdf + npdf)
 
+            #self._cached  = dict( ei=ei, func_s=func_s, func_m=func_m, cand=cand )
+
+
             return ei
         else:
             # If there are pending experiments, fantasize their outcomes.

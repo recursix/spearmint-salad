@@ -12,18 +12,15 @@ import numpy as np
 from os import path
 from spearmint_salad.dataset import DatasetPartition, DatasetView, SplitMask
 
-def make_salad( hp_space, metric, dataset_partition, salad_size = 25, max_iter = 100 ):
-    
-    
+def make_salad( hp_space, metric, dataset_partition, salad_size = 25, max_iter = 100, mcmc_iters=10 ):
     
     trace_name = "trace_%s_on_%s_with_%d_voters.pkl"%(hp_space.name, dataset_partition.name, salad_size)
     trace_path = path.expandvars(path.join( experiments_folder, 'tests', trace_name ))
 
-
     salad.SpearmintSalad(
         evaluator=base.Evaluator(dataset_partition),
         metric=metric,
-        optimizer = base.GPEIOptimizer(hp_space, grid_size=10000, mcmc_iters = 0, burnin=50),
+        optimizer = base.GPEIOptimizer(hp_space, grid_size=10000, mcmc_iters = mcmc_iters, burnin=mcmc_iters),
         salad_size=salad_size,
         n_iter=max_iter,
         trace_path = trace_path,
@@ -32,6 +29,29 @@ def make_salad( hp_space, metric, dataset_partition, salad_size = 25, max_iter =
         
     return TraceDBFile(trace_path)
 
+class NormalizeDs:
+    
+    def __init__(self, loader):
+        self.loader = loader
+        self.name = get_name(loader)
+        
+    def __call__( self ):
+        ds = self.loader()
+        mean = np.mean(ds.target)
+        std = np.std(ds.target)
+        if std == 0:
+            std = 1
+        ds.target = (ds.target - mean)/std
+        return ds
+
+def get_name(obj):
+    if hasattr(obj,'name'):
+        return obj.name
+    if hasattr(obj,'__name__'):
+        return obj.__name__
+    if hasattr(obj,'__class__'):
+        return obj.__class__.__name__
+    return '<unknown name>'
 
 def make_partition( dataset_loader, trn_ratio=0.6, val_ratio=0.2, dataset_name=None):
     """
@@ -43,13 +63,7 @@ def make_partition( dataset_loader, trn_ratio=0.6, val_ratio=0.2, dataset_name=N
     
     
     if dataset_name is None:
-        try:
-            dataset_name = dataset_loader.__name__
-        except AttributeError:
-            try:
-                dataset_name = dataset_loader.__class__.__name__
-            except AttributeError:
-                pass
+        dataset_name = get_name(dataset_loader)
                 
     
     return DatasetPartition( dataset_name,

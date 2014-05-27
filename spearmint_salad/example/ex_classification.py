@@ -12,7 +12,7 @@ from spearmint_salad import  hp
 from sklearn.svm import SVC
 hp_space = hp.Obj(SVC)(
     C = hp.Float( 0.01, 1000, hp.log_scale ),
-    gamma = hp.Float( 10**-5, 1000, hp.log_scale ),
+    gamma = hp.Float( 1e-7, 1000, hp.log_scale ),
 )
 
 from sklearn.datasets.base import load_digits
@@ -21,7 +21,7 @@ dataset_partition = make_partition(load_digits, trn_ratio=0.6, val_ratio=0.2)
 from spearmint_salad import  metric
 metric = metric.ZeroOneLoss()
 
-trace = make_salad( hp_space, metric, dataset_partition, max_iter = 100)
+trace = make_salad( hp_space, metric, dataset_partition, max_iter = 10, mcmc_iters=0)
 
 print format_trace_structure(trace)
 print
