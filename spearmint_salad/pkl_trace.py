@@ -15,7 +15,6 @@ import getpass
 import fcntl
 import tempfile
 
-
 def get_sys_info():
     info = {
         'main': traceback.extract_stack()[0][0],
@@ -46,7 +45,11 @@ class Trace:
         if trace_path is None:
             trace_path = get_default_trace_path()
             print 'trace_path:', trace_path
-         
+        
+        trace_dir = os.path.dirname(trace_path)
+        if not os.path.exists(trace_dir):
+            os.makedirs(trace_dir)
+        
         self.trace_level = trace_level
         self.trace_path = trace_path
         self.pid = os.getpid()
